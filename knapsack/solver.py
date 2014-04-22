@@ -63,9 +63,6 @@ def solve_it(input_data):
     output_data += ' '.join(map(str, original_taken))
     return output_data
 
-
-import sys
-
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         file_location = sys.argv[1].strip()
@@ -75,4 +72,3 @@ if __name__ == '__main__':
         print solve_it(input_data)
     else:
         print 'This test requires an input file.  Please select one from the data directory. (i.e. python solver.py ./data/ks_4_0)'
-
