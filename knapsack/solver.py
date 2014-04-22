@@ -14,7 +14,7 @@ best_taken = []
 def solve_it(input_data):
     global taken
     global best_taken
-
+    global goal
     # parse the input
     lines = input_data.split('\n')
 
