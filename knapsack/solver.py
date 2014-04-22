@@ -2,10 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from collections import namedtuple
-Item = namedtuple("Item", ['index', 'value', 'weight'])
+import sys
+import copy
+
+sys.setrecursionlimit(100000000)
+Item = namedtuple("Item", ['index', 'value', 'weight', 'ratio'])
+goal = 0
+taken = []
+best_taken = []
 
 def solve_it(input_data):
-    # Modify this code to run your optimization algorithm
+    global taken
+    global best_taken
 
     # parse the input
     lines = input_data.split('\n')
@@ -19,32 +27,42 @@ def solve_it(input_data):
     for i in range(1, item_count+1):
         line = lines[i]
         parts = line.split()
-        items.append(Item(i-1, int(parts[0]), int(parts[1])))
+        items.append(Item(i-1, int(parts[0]), int(parts[1]), float(int(parts[0]) * 1.0 / int(parts[1]))))
 
-    table = [[0] * (capacity + 1) for i in range(item_count + 1)]
-    mark = [[0] * (capacity + 1) for i in range(item_count + 1)]
-
-    for i in range(1, item_count + 1):
-        item_i = items[i - 1]
-        for j in range(1, capacity + 1):
-            old_value = table[i - 1][j]
-            new_value = item_i.value + table[i - 1][j - item_i.weight] if j >= item_i.weight else 0
-            table[i][j], mark[i][j] = (new_value, 1) if new_value > old_value else (old_value, 0)
-
-    value = table[item_count][capacity]
+    sorted_items = sorted(items, key = lambda x: x[3], reverse = True)
+    goal = 0
     taken = [0] * item_count
+    best_taken = [0] * item_count
 
-    # backtrace
-    cap, count = capacity, item_count
-    while(cap > 0 and count > 0):
-        taken[count - 1] = mark[count][cap]
-        cap -= items[count - 1].weight if mark[count][cap] == 1 else 0
-        count -= 1
+    def dfs(index, cnt_capacity, cnt_value):
+        global goal
+        global best_taken
+
+        if index == item_count or cnt_capacity == 0:
+            if cnt_value > goal:
+                goal = cnt_value
+                best_taken = copy.copy(taken)
+        else:
+            item = sorted_items[index]
+            if cnt_value + item[3] * cnt_capacity <= goal:
+                return
+            if item[2] <= cnt_capacity:
+                taken[index] = 1
+                dfs(index + 1, cnt_capacity - item[2], cnt_value + item[1])
+            taken[index:] = [0] * (item_count - index)
+            dfs(index + 1, cnt_capacity, cnt_value)
+
+    dfs(0, capacity, 0)
+
+    original_taken = [0] * item_count
+    for i in range(item_count):
+        original_taken[sorted_items[i][0]] = best_taken[i]
 
     # prepare the solution in the specified output format
-    output_data = str(value) + ' ' + str(1) + '\n'
-    output_data += ' '.join(map(str, taken))
+    output_data = str(goal) + ' ' + str(1) + '\n'
+    output_data += ' '.join(map(str, original_taken))
     return output_data
+
 
 import sys
 
