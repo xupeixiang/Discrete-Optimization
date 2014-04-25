@@ -13,18 +13,32 @@ def solve_it(input_data):
     edge_count = int(first_line[1])
 
     edges = []
+    neighbors = [[] for i in range(node_count + 1)]
+    neighbor_colors = [[-1] for i in range(node_count + 1)]
+    colors = [0] * node_count
+
     for i in range(1, edge_count + 1):
         line = lines[i]
         parts = line.split()
         edges.append((int(parts[0]), int(parts[1])))
+        neighbors[int(parts[0])].append(int(parts[1]))
+        neighbors[int(parts[1])].append(int(parts[0]))
 
-    # build a trivial solution
-    # every node has its own color
-    solution = range(0, node_count)
+    def get_color(neighbor_color):
+        for i, color in enumerate(neighbor_color):
+            if color > i - 1:
+                return i - 1
+        return neighbor_color[-1] + 1
+
+    for i in range(node_count):
+        color = get_color(neighbor_colors[i])
+        colors[i] = color
+        map(lambda neighbor:neighbor_colors[neighbor].append(color), neighbors[i])
+
 
     # prepare the solution in the specified output format
-    output_data = str(node_count) + ' ' + str(0) + '\n'
-    output_data += ' '.join(map(str, solution))
+    output_data = str(len(set(colors))) + ' ' + str(1) + '\n'
+    output_data += ' '.join(map(str, colors))
 
     return output_data
 
