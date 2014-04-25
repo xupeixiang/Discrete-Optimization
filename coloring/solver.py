@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import copy
 
 def solve_it(input_data):
     # Modify this code to run your optimization algorithm
@@ -33,6 +34,13 @@ def solve_it(input_data):
                 break
         return c
 
+    def get_neighbor_colors(vertex):
+        neighbor_colors_v = set()
+        for neighbor in neighbors[vertex]:
+            neighbor_colors_v.add(colors[neighbor])
+
+        return neighbor_colors_v
+
     neighbors_num = [(i,len(neighbor)) for i,neighbor in enumerate(neighbors)]
     orders = sorted(neighbors_num, key = lambda num:num[1], reverse = True)
 
@@ -42,6 +50,32 @@ def solve_it(input_data):
         for neighbor in neighbors[i]:
             neighbor_colors[neighbor].add(color)
         #print i, color, neighbors[i], neighbor_colors[i]
+
+    # swap
+    swap_candidates = copy.copy(edges)
+    while(len(swap_candidates) > 0):
+        v1, v2 = swap_candidates.pop()
+        color1, color2 = (colors[v1], colors[v2])
+        color_small, v_small, color_big, v_big = (color1, v1, color2, v2) if color1 < color2 else (color2, v2, color1, v1)
+        all_neighbored_small = True
+        for neighbor in neighbors[v_big]:
+            if color_small not in neighbor_colors[neighbor]:
+                all_neighbored_small = False
+                break
+        if all_neighbored_small:
+            colors[v_big] = color_small
+            for neighbor in neighbors[v_big]:
+                neighbor_colors[neighbor] = get_neighbor_colors(neighbor)
+
+            neighbor_colors[v_small].add(color_small)
+            neighbor_colors[v_small].remove(color_big)
+            neighbor_colors[v_big].remove(color_small)
+            colors[v_small] = get_color(neighbor_colors[v_small])
+            neighbor_colors[v_big].add(colors[v_small])
+
+            for neighbor in neighbors[v_small]:
+                neighbor_colors[neighbor] = get_neighbor_colors(neighbor)
+                swap_candidates.append((v_small, neighbor))
 
     # check
     #for v1,v2 in edges:
