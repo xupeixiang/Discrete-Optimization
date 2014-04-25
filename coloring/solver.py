@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import heapq
 
 def solve_it(input_data):
     # Modify this code to run your optimization algorithm
@@ -13,8 +13,8 @@ def solve_it(input_data):
     edge_count = int(first_line[1])
 
     edges = []
-    neighbors = [[] for i in range(node_count + 1)]
-    neighbor_colors = [[-1] for i in range(node_count + 1)]
+    neighbors = [[] for i in range(node_count)]
+    neighbor_colors = [[-1] for i in range(node_count)]
     colors = [0] * node_count
 
     for i in range(1, edge_count + 1):
@@ -30,11 +30,27 @@ def solve_it(input_data):
                 return i - 1
         return neighbor_color[-1] + 1
 
+    def ordered_insert(neighbor_color, color):
+        loc = 1
+        for i, c in enumerate(neighbor_color):
+            if c < color:
+                loc = i
+            else:
+                break
+        neighbor_color.insert(loc + 1, color)
+
     for i in range(node_count):
         color = get_color(neighbor_colors[i])
         colors[i] = color
-        map(lambda neighbor:neighbor_colors[neighbor].append(color), neighbors[i])
+        for neighbor in neighbors[i]:
+            if color not in neighbor_colors[neighbor]:
+                ordered_insert(neighbor_colors[neighbor], color)
+                #print i, color, neighbor, neighbor_colors[neighbor]
 
+    # check
+    for v1,v2 in edges:
+        if colors[v1] == colors[v2]:
+            print 'Error: colors of %s = colors of %s.' %(v1, v2)
 
     # prepare the solution in the specified output format
     output_data = str(len(set(colors))) + ' ' + str(1) + '\n'
