@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import copy
 
 def solve_it(input_data):
     # Modify this code to run your optimization algorithm
@@ -49,7 +48,6 @@ def solve_it(input_data):
         colors[i] = color
         for neighbor in neighbors[i]:
             neighbor_colors[neighbor].add(color)
-    # print 'orginal count: %d' %len(set(colors))
     changed = True
     # check optimal
     while(changed):
@@ -85,9 +83,6 @@ def solve_it(input_data):
                     colors[v_big] = original_color_big
                     if replaced and color_same_new_colors:
                         changed = True
-                        # print '%d: %d -> %d, %d: %d -> %d, ' % (i, colors[i], candidate_color_small,
-                        #         v_big, colors[v_big], color) + ','.join([str(neighbor_big) + ': ' + str(color) + ' -> ' + str(candidate_color_same)
-                        #             for neighbor_big, candidate_color_same in color_same_new_colors.items()])
                         # update neighbors colors
                         need_update_vertex_set = neighbors[i].union(neighbors[v_big])
                         colors[i] = candidate_color_small
