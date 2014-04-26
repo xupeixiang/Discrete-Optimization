@@ -13,7 +13,7 @@ def solve_it(input_data):
     edge_count = int(first_line[1])
 
     edges = []
-    neighbors = [[] for i in range(node_count)]
+    neighbors = [set() for i in range(node_count)]
     neighbor_colors = [set() for i in range(node_count)]
     colors = [0] * node_count
 
@@ -21,8 +21,8 @@ def solve_it(input_data):
         line = lines[i]
         parts = line.split()
         edges.append((int(parts[0]), int(parts[1])))
-        neighbors[int(parts[0])].append(int(parts[1]))
-        neighbors[int(parts[1])].append(int(parts[0]))
+        neighbors[int(parts[0])].add(int(parts[1]))
+        neighbors[int(parts[1])].add(int(parts[0]))
 
     def get_color(neighbor_color):
         sorted_colors = sorted(neighbor_color)
@@ -49,33 +49,39 @@ def solve_it(input_data):
         colors[i] = color
         for neighbor in neighbors[i]:
             neighbor_colors[neighbor].add(color)
-        #print i, color, neighbors[i], neighbor_colors[i]
+        print i, color, neighbors[i], neighbor_colors[i]
+    
+    # check optimal
+    for i in range(node_count):
+        neighbor_color = neighbor_colors[i]
+        if max(neighbor_color) > len(neighbor_color):
+            print i, ','.join(map(str, neighbor_color))
 
     # swap
-    swap_candidates = copy.copy(edges)
-    while(len(swap_candidates) > 0):
-        v1, v2 = swap_candidates.pop()
-        color1, color2 = (colors[v1], colors[v2])
-        color_small, v_small, color_big, v_big = (color1, v1, color2, v2) if color1 < color2 else (color2, v2, color1, v1)
-        all_neighbored_small = True
-        for neighbor in neighbors[v_big]:
-            if color_small not in neighbor_colors[neighbor]:
-                all_neighbored_small = False
-                break
-        if all_neighbored_small:
-            colors[v_big] = color_small
-            for neighbor in neighbors[v_big]:
-                neighbor_colors[neighbor] = get_neighbor_colors(neighbor)
+    #swap_candidates = copy.copy(edges)
+    #while(len(swap_candidates) > 0):
+    #    v1, v2 = swap_candidates.pop()
+    #    color1, color2 = (colors[v1], colors[v2])
+    #    color_small, v_small, color_big, v_big = (color1, v1, color2, v2) if color1 < color2 else (color2, v2, color1, v1)
+    #    all_neighbored_small = True
+    #    for neighbor in neighbors[v_big]:
+    #        if color_small not in neighbor_colors[neighbor]:
+    #            all_neighbored_small = False
+    #            break
+    #    if all_neighbored_small:
+    #        colors[v_big] = color_small
+    #        for neighbor in neighbors[v_big]:
+    #            neighbor_colors[neighbor] = get_neighbor_colors(neighbor)
 
-            neighbor_colors[v_small].add(color_small)
-            neighbor_colors[v_small].remove(color_big)
-            neighbor_colors[v_big].remove(color_small)
-            colors[v_small] = get_color(neighbor_colors[v_small])
-            neighbor_colors[v_big].add(colors[v_small])
+    #        neighbor_colors[v_small].add(color_small)
+    #        neighbor_colors[v_small].remove(color_big)
+    #        neighbor_colors[v_big].remove(color_small)
+    #        colors[v_small] = get_color(neighbor_colors[v_small])
+    #        neighbor_colors[v_big].add(colors[v_small])
 
-            for neighbor in neighbors[v_small]:
-                neighbor_colors[neighbor] = get_neighbor_colors(neighbor)
-                swap_candidates.append((v_small, neighbor))
+    #        for neighbor in neighbors[v_small]:
+    #            neighbor_colors[neighbor] = get_neighbor_colors(neighbor)
+    #            swap_candidates.append((v_small, neighbor))
 
     # check
     #for v1,v2 in edges:
