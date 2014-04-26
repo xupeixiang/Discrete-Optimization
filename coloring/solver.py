@@ -49,7 +49,6 @@ def solve_it(input_data):
         colors[i] = color
         for neighbor in neighbors[i]:
             neighbor_colors[neighbor].add(color)
-        print i, color, neighbors[i], neighbor_colors[i]
     
     # check optimal
     for i in range(node_count):
