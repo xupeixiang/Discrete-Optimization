@@ -48,6 +48,8 @@ def solve_it(input_data):
         colors[i] = color
         for neighbor in neighbors[i]:
             neighbor_colors[neighbor].add(color)
+
+    print 'original: %d' % len(set(colors))
     changed = True
     # check optimal
     while(changed):
@@ -60,7 +62,8 @@ def solve_it(input_data):
                 v_c_pairs = [(neighbor, colors[neighbor]) for neighbor in neighbors[i]]
                 v_big = (max(v_c_pairs, key = lambda p: p[1]))[0]
                 v_color_same = -1
-                for color in range(candidate_color_small):
+                for color in range(colors[v_big]):
+                    if color == candidate_color_small: continue
                     replaced = True
                     color_same_new_colors = {}
 
