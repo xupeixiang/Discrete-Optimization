@@ -6,16 +6,13 @@ import time
 import sys
 sys.setrecursionlimit(100000000)
 
-candidate_colors = set()
 colors = []
 best_colors = []
-neighbor_colors = []
 baseline = 0
 
 def solve_it(input_data):
     global best_colors
     global baseline
-    global neighbor_colors
     global colors
 
     # parse the input
@@ -28,6 +25,7 @@ def solve_it(input_data):
     edges = []
     neighbors = [set() for i in range(node_count)]
     neighbor_colors = [collections.defaultdict(int) for i in range(node_count)]
+    candidate_colors = set()
     colors = [0] * node_count
     best_colors = []
     baseline = node_count
@@ -49,11 +47,9 @@ def solve_it(input_data):
     neighbors_num = [(i,len(neighbor)) for i,neighbor in enumerate(neighbors)]
     orders = sorted(neighbors_num, key = lambda num:num[1], reverse = True)
     # use dp
-    def dfs(order_index, color):
-        global candidate_colors
+    def dfs(order_index, color, neighbor_colors, candidate_colors):
         global best_colors
         global baseline
-        global neighbor_colors
         global colors
 
         if order_index >= node_count: # won't happen internally
@@ -73,15 +69,14 @@ def solve_it(input_data):
                 best_colors = copy.copy(colors)
                 baseline = crnt_color_count
             return
+
         next_index = orders[order_index + 1][0]
-        # print index, next_index 
         next_candidate_colors = candidate_colors.difference(neighbor_colors[next_index])
         new_color = len(candidate_colors)
         next_candidate_colors.add(new_color)
 
-        # print len(neighbors_neighors_colors) > 0, len(next_candidate_colors)
         for next_color in next_candidate_colors:
-            if next_color not in candidate_colors and crnt_color_count >= baseline - 1: # can't be better
+            if next_color == new_color and crnt_color_count >= baseline - 1: # can't be better
                 continue
 
             neighbors_ok = True
@@ -92,7 +87,7 @@ def solve_it(input_data):
             if not neighbors_ok:
                 continue
 
-            dfs(order_index + 1, next_color)
+            dfs(order_index + 1, next_color, neighbor_colors, candidate_colors)
 
             # clear next_index
             for neighbor in neighbors[next_index]:
@@ -101,7 +96,9 @@ def solve_it(input_data):
                     # print 'neighbor %d of index %d remove color %d:' % (neighbor, next_index, next_color)
             if next_color == new_color:
                 candidate_colors.remove(next_color)
-    dfs(0, 0)
+
+    dfs(0, 0, neighbor_colors, candidate_colors)
+
     # check
     for v1,v2 in edges:
         if best_colors[v1] == best_colors[v2]:
