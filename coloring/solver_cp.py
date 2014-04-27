@@ -78,32 +78,17 @@ def solve_it(input_data):
         next_candidate_colors = set(candidate_colors).difference(neighbor_colors[next_index])
         next_candidate_colors.add(len(candidate_colors))
 
-        neighbors_neighors_colors = set()
-        bad_colors = set()
-        neighbor_count = 0
-        for next_color in next_candidate_colors:
-            neighbor_count = 0
-            for neighbor in neighbors[next_index]:
-                if next_color in neighbor_colors[neighbor]:
-                    neighbor_count += 1
-                    neighbors_neighors_colors.add(next_color)
-                elif len(neighbor_colors[neighbor]) >= baseline - 2: # neighbors not ok
-                    bad_colors.add(next_color)
-                    if next_color in neighbors_neighors_colors:
-                        neighbors_neighors_colors.remove(next_color)
-                    break
-            if neighbor_count == len(neighbors[next_index]): # common neighbor color, choose it
-                neighbors_neighors_colors.clear()
-                neighbors_neighors_colors.add(next_color)
-                break
-
-        if neighbors_neighors_colors:
-            next_candidate_colors = neighbors_neighors_colors
-        else:
-            next_candidate_colors = next_candidate_colors.difference(bad_colors)
         # print len(neighbors_neighors_colors) > 0, len(next_candidate_colors)
         for next_color in next_candidate_colors:
             if next_color not in candidate_colors and crnt_color_count >= baseline - 1: # can't be better
+                continue
+
+            neighbors_ok = True
+            for neighbor in neighbors[next_index]:
+                if next_color not in neighbor_colors[neighbor] and len(neighbor_colors[neighbor]) >= baseline - 2: # neighbors not ok:
+                    neighbors_ok = False
+                    break
+            if not neighbors_ok:
                 continue
 
             dfs(order_index + 1, next_color)
