@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import collections
 import copy
+import time
 import sys
 sys.setrecursionlimit(100000000)
 
@@ -76,20 +77,37 @@ def solve_it(input_data):
         # print index, next_index 
         next_candidate_colors = set(candidate_colors).difference(neighbor_colors[next_index])
         next_candidate_colors.add(len(candidate_colors))
+
+        neighbors_neighors_colors = set()
+        bad_colors = set()
+        neighbor_count = 0
+        for next_color in next_candidate_colors:
+            neighbor_count = 0
+            for neighbor in neighbors[next_index]:
+                if next_color in neighbor_colors[neighbor]:
+                    neighbor_count += 1
+                    neighbors_neighors_colors.add(next_color)
+                elif len(neighbor_colors[neighbor]) >= baseline - 2: # neighbors not ok
+                    bad_colors.add(next_color)
+                    if next_color in neighbors_neighors_colors:
+                        neighbors_neighors_colors.remove(next_color)
+                    break
+            if neighbor_count == len(neighbors[next_index]): # common neighbor color, choose it
+                neighbors_neighors_colors.clear()
+                neighbors_neighors_colors.add(next_color)
+                break
+
+        if neighbors_neighors_colors:
+            next_candidate_colors = neighbors_neighors_colors
+        else:
+            next_candidate_colors = next_candidate_colors.difference(bad_colors)
+        # print len(neighbors_neighors_colors) > 0, len(next_candidate_colors)
         for next_color in next_candidate_colors:
             if next_color not in candidate_colors and crnt_color_count >= baseline - 1: # can't be better
                 continue
 
-            neighbor_ok = True
-            for neighbor in neighbors[next_index]:
-                if next_color not in neighbor_colors[neighbor] and len(neighbor_colors[neighbor]) >= baseline - 2: # neighbor not ok
-                    neighbor_ok = False
-                    break
-            if not neighbor_ok:
-                continue
-
-            # print next_index, next_color, baseline
             dfs(order_index + 1, next_color)
+
             # clear next_index
             for neighbor in neighbors[next_index]:
                 neighbor_colors[neighbor][next_color] -= 1
@@ -97,7 +115,6 @@ def solve_it(input_data):
                     # print 'neighbor %d of index %d remove color %d:' % (neighbor, next_index, next_color)
             candidate_colors[next_color] -= 1
             if candidate_colors[next_color] == 0: del candidate_colors[next_color]
-
     dfs(0, 0)
     # check
     for v1,v2 in edges:
@@ -118,7 +135,10 @@ if __name__ == '__main__':
         input_data_file = open(file_location, 'r')
         input_data = ''.join(input_data_file.readlines())
         input_data_file.close()
+        time_start = time.time()
         print solve_it(input_data)
+        time_end = time.time()
+        print 'Time: %f s' % (time_end - time_start)
     else:
         print 'This test requires an input file.  Please select one from the data directory. (i.e. python solver.py ./data/gc_4_1)'
 
