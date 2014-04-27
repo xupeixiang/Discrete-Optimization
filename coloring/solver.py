@@ -6,7 +6,7 @@ import time
 import sys
 sys.setrecursionlimit(100000000)
 
-candidate_colors = collections.defaultdict(int)
+candidate_colors = set()
 colors = []
 best_colors = []
 neighbor_colors = []
@@ -59,7 +59,7 @@ def solve_it(input_data):
         if order_index >= node_count: # won't happen internally
             return
         index = orders[order_index][0]
-        candidate_colors[color] += 1
+        candidate_colors.add(color)
         colors[index] = color
 
         for neighbor in neighbors[index]:
@@ -75,8 +75,9 @@ def solve_it(input_data):
             return
         next_index = orders[order_index + 1][0]
         # print index, next_index 
-        next_candidate_colors = set(candidate_colors).difference(neighbor_colors[next_index])
-        next_candidate_colors.add(len(candidate_colors))
+        next_candidate_colors = candidate_colors.difference(neighbor_colors[next_index])
+        new_color = len(candidate_colors)
+        next_candidate_colors.add(new_color)
 
         # print len(neighbors_neighors_colors) > 0, len(next_candidate_colors)
         for next_color in next_candidate_colors:
@@ -98,8 +99,8 @@ def solve_it(input_data):
                 neighbor_colors[neighbor][next_color] -= 1
                 if neighbor_colors[neighbor][next_color] == 0: del neighbor_colors[neighbor][next_color]
                     # print 'neighbor %d of index %d remove color %d:' % (neighbor, next_index, next_color)
-            candidate_colors[next_color] -= 1
-            if candidate_colors[next_color] == 0: del candidate_colors[next_color]
+            if next_color == new_color:
+                candidate_colors.remove(next_color)
     dfs(0, 0)
     # check
     for v1,v2 in edges:
