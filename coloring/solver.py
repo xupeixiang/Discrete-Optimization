@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import collections
 import copy
 
-candidate_colors = set()
+candidate_colors = collections.defaultdict(int)
 colors = []
 best_colors = []
 neighbor_colors = []
@@ -23,7 +24,7 @@ def solve_it(input_data):
 
     edges = []
     neighbors = [set() for i in range(node_count)]
-    neighbor_colors = [set() for i in range(node_count)]
+    neighbor_colors = [collections.defaultdict(int) for i in range(node_count)]
     colors = [0] * node_count
     best_colors = []
     baseline = node_count
@@ -42,37 +43,49 @@ def solve_it(input_data):
                 neighbor_colors_v.add(colors[neighbor])
         return neighbor_colors_v
 
+    neighbors_num = [(i,len(neighbor)) for i,neighbor in enumerate(neighbors)]
+    orders = sorted(neighbors_num, key = lambda num:num[1], reverse = True)
     # use dp
-    def dfs(index, color):
+    def dfs(order_index, color):
         global candidate_colors
         global best_colors
         global baseline
         global neighbor_colors
         global colors
 
-        if index >= node_count: # won't happen internally
+        if order_index >= node_count: # won't happen internally
             return
-        already_color_count = len(candidate_colors)
-        neighbor_colors[index] = get_neighbor_colors(index)
-        # print index, color, neighbor_colors[index], candidate_colors
-        if color in neighbor_colors[index] or (color not in candidate_colors and
-                already_color_count >= baseline - 1) or already_color_count >= baseline: # can't be better
+        index = orders[order_index][0]
+        candidate_colors[color] += 1
+        colors[index] = color
+
+        for neighbor in neighbors[index]:
+            neighbor_colors[neighbor][color] += 1
+            # print 'neighbor %d of index %d add color %d:' % (neighbor, index, color)
+
+        crnt_color_count = len(candidate_colors)
+        if order_index == node_count - 1:
+            if crnt_color_count < baseline: # better
+                print 'Baseline: %d -> %d' % (baseline, crnt_color_count)
+                best_colors = copy.copy(colors)
+                baseline = crnt_color_count
             return
-        else:
-            candidate_colors.add(color)
-            colors[index] = color
-            cnt_color_count = len(candidate_colors)
-            if index == node_count - 1:
-                if cnt_color_count < baseline: # better
-                    print 'Baseline: %d -> %d' % (baseline, cnt_color_count)
-                    best_colors = copy.copy(colors)
-                    baseline = cnt_color_count
-                return
-            for color in (list(candidate_colors) + [len(candidate_colors)]):
-                dfs(index + 1, color)
-                # restore index + 1 status
-                colors[index + 1:] = [-1] * (node_count - index - 1)
-                candidate_colors = set([color for color in colors if color > -1])
+        next_index = orders[order_index + 1][0]
+        # print index, next_index 
+        for next_color in (list(candidate_colors) + [len(candidate_colors)]):
+            if (next_color in neighbor_colors[next_index]) or (next_color not in
+                    candidate_colors and crnt_color_count >= baseline - 1) : # can't be better
+                continue
+            # print next_index, next_color, baseline
+            dfs(order_index + 1, next_color)
+            # clear next_index
+            for neighbor in neighbors[next_index]:
+                neighbor_colors[neighbor][next_color] -= 1
+                if neighbor_colors[neighbor][next_color] == 0: del neighbor_colors[neighbor][next_color]
+                    # print 'neighbor %d of index %d remove color %d:' % (neighbor, next_index, next_color)
+            candidate_colors[next_color] -= 1
+            if candidate_colors[next_color] == 0: del candidate_colors[next_color]
+
     dfs(0, 0)
     # check
     for v1,v2 in edges:
