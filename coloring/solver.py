@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import collections
 import copy
+import sys
+sys.setrecursionlimit(100000000)
 
 candidate_colors = collections.defaultdict(int)
 colors = []
@@ -72,10 +74,20 @@ def solve_it(input_data):
             return
         next_index = orders[order_index + 1][0]
         # print index, next_index 
-        for next_color in (list(candidate_colors) + [len(candidate_colors)]):
-            if (next_color in neighbor_colors[next_index]) or (next_color not in
-                    candidate_colors and crnt_color_count >= baseline - 1) : # can't be better
+        next_candidate_colors = set(candidate_colors).difference(neighbor_colors[next_index])
+        next_candidate_colors.add(len(candidate_colors))
+        for next_color in next_candidate_colors:
+            if next_color not in candidate_colors and crnt_color_count >= baseline - 1: # can't be better
                 continue
+
+            neighbor_ok = True
+            for neighbor in neighbors[next_index]:
+                if next_color not in neighbor_colors[neighbor] and len(neighbor_colors[neighbor]) >= baseline - 2: # neighbor not ok
+                    neighbor_ok = False
+                    break
+            if not neighbor_ok:
+                continue
+
             # print next_index, next_color, baseline
             dfs(order_index + 1, next_color)
             # clear next_index
@@ -99,7 +111,6 @@ def solve_it(input_data):
     return output_data
 
 
-import sys
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
